@@ -27,6 +27,8 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install dependencies
+        env:
+          DATABASE_URL: "file:ci.db"
         run: npm ci
 
       - name: Sync Capacitor
