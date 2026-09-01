@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -8,6 +9,12 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient() {
   const url = process.env.DATABASE_URL ?? "file:dev.db";
+
+  // Neon serverless PostgreSQL (recommended for Vercel)
+  if (url.includes("neon.tech")) {
+    const adapter = new PrismaNeon({ connectionString: url });
+    return new PrismaClient({ adapter });
+  }
 
   // PostgreSQL URLs (used in production on Vercel)
   if (/^postgres(ql)?:\/\//i.test(url)) {
