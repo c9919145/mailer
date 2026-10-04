@@ -32,9 +32,6 @@ jobs:
           DATABASE_URL: "file:ci.db"
         run: npm ci --no-audit --no-fund
 
-      # Warnings are reported but do not fail the job, so the nine known
-      # unused-variable warnings do not block unrelated work. Use
-      # `--max-warnings 0` once those are cleared.
       - name: Lint
         run: npm run lint
 
