@@ -55,7 +55,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) {
     if (asChild && React.isValidElement(children)) {
-      const child = children as React.ReactElement<any>
+      const child = children as React.ReactElement<{ className?: string }>
       const childClassName = child.props.className;
       const mergedClassName = cn(buttonVariants({ variant, size, className }), childClassName);
       return createElement(child.type, {

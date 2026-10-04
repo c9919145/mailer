@@ -9,8 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   Legend,
   PieChart,
   Pie,
@@ -71,17 +69,28 @@ export function AnalyticsClient() {
   const [days, setDays] = useState("30");
   const [loading, setLoading] = useState(true);
 
-  async function loadData(daysParam: string) {
-    setLoading(true);
-    const res = await fetch(`/api/analytics?days=${daysParam}`);
-    const json = await res.json();
-    setData(json);
-    setLoading(false);
-  }
-
+  // `loading` is raised by the control that changes `days`, not by the effect.
+  // Setting it here instead meant a synchronous `setState` in the effect body,
+  // which cascades an extra render on every range change. The `ignore` flag
+  // also stops a slower earlier request from overwriting a newer result.
   useEffect(() => {
-    loadData(days);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/analytics?days=${days}`);
+        if (ignore) return;
+        const json = await res.json();
+        if (ignore) return;
+        setData(json);
+      } catch (error) {
+        console.error("Failed to load analytics", error);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
   }, [days]);
 
   const pieData = data
@@ -106,7 +115,13 @@ export function AnalyticsClient() {
         title="Analytics"
         description="Track the performance of your email campaigns."
         actions={
-          <Select value={days} onValueChange={(v) => setDays(v ?? "30")}>
+          <Select
+            value={days}
+            onValueChange={(v) => {
+              setDays(v ?? "30");
+              setLoading(true);
+            }}
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Time range" />
             </SelectTrigger>

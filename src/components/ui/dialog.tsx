@@ -11,18 +11,27 @@ function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
+// Base UI types `render` as `(props, state) => ReactElement`. Deriving the
+// parameter type keeps this callback checked instead of `any`.
+type DialogTriggerRenderProps = Parameters<
+  Extract<
+    React.ComponentProps<typeof DialogPrimitive.Trigger>["render"],
+    (...args: never[]) => unknown
+  >
+>[0]
+
 function DialogTrigger({
   asChild,
   children,
   ...props
 }: DialogPrimitive.Trigger.Props & { asChild?: boolean }) {
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as React.ReactElement<Record<string, unknown>>
     return React.createElement(DialogPrimitive.Trigger, {
       ...props,
-      render: (props: any) =>
-        React.cloneElement(child, { ...child.props, ...props }),
-    });
+      render: (renderProps: DialogTriggerRenderProps) =>
+        React.cloneElement(child, { ...child.props, ...renderProps }),
+    })
   }
   return (
     <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props}>

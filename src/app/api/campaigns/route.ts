@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
-import { CampaignStatus } from "@prisma/client";
+import { CampaignStatus, Prisma } from "@prisma/client";
 
 const createCampaignSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status") as CampaignStatus | null;
 
-  const where: any = { userId: user.id };
+  const where: Prisma.CampaignWhereInput = { userId: user.id };
   if (status) {
     where.status = status;
   }

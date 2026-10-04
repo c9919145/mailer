@@ -3,6 +3,25 @@ import Papa from "papaparse";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
+// PapaParse returns `unknown` rows unless a row type is supplied. The importer
+// deliberately tolerates several spellings of each column, so they are all
+// declared rather than reaching for `any`.
+interface CsvRow {
+  email?: string;
+  Email?: string;
+  firstName?: string;
+  first_name?: string;
+  firstname?: string;
+  lastName?: string;
+  last_name?: string;
+  lastname?: string;
+  phone?: string;
+  Phone?: string;
+  company?: string;
+  Company?: string;
+  [key: string]: string | undefined;
+}
+
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) {
@@ -19,7 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     const text = await file.text();
-    const parsed: any = Papa.parse(text, {
+    const parsed = Papa.parse<CsvRow>(text, {
       header: true,
       skipEmptyLines: true,
     });

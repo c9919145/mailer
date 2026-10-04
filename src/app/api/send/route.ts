@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { EmailStatus } from "@prisma/client";
 import { enqueueEmail } from "@/lib/email/queue";
-import { renderTemplate, extractVariables, generatePlainText } from "@/lib/email/render";
+import { renderTemplate, generatePlainText } from "@/lib/email/render";
 
 const sendEmailSchema = z.object({
   from: z.object({
