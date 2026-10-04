@@ -35,7 +35,7 @@ export default async function ContactsPage() {
           </>
         }
       />
-      <ContactsTable contacts={contacts} lists={lists} />
+      <ContactsTable contacts={contacts} />
     </div>
   );
 }

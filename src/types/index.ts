@@ -1,4 +1,4 @@
-import type { Contact, List, Template, Campaign, Domain, Webhook } from "@prisma/client";
+import type { Contact, List, Template, Campaign } from "@prisma/client";
 
 export type { List } from "@prisma/client";
 export type { Template } from "@prisma/client";

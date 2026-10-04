@@ -19,7 +19,7 @@ const navItems = [
   { title: "Settings", href: "/settings" },
 ];
 
-export function MobileNav({ user }: { user: { name?: string | null } }) {
+export function MobileNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 

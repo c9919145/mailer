@@ -33,15 +33,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { ContactWithLists, List } from "@/types";
+import { ContactWithLists } from "@/types";
 import { format } from "date-fns";
 
 interface ContactsTableProps {
   contacts: ContactWithLists[];
-  lists: List[];
 }
 
-export function ContactsTable({ contacts: initialContacts, lists }: ContactsTableProps) {
+export function ContactsTable({ contacts: initialContacts }: ContactsTableProps) {
   const router = useRouter();
   const [contacts, setContacts] = useState(initialContacts);
   const [search, setSearch] = useState("");
