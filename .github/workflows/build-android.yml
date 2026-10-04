@@ -32,6 +32,33 @@ jobs:
           DATABASE_URL: "file:ci.db"
         run: npm ci
 
+      # The WebView loads `server.url`, so for a non-loopback URL this app is
+      # entirely server-side: `src/middleware.ts` rules out `output: 'export'`,
+      # so `next build` can never emit `out/`. The empty directory is therefore
+      # expected and only satisfies `cap sync`; correctness rests entirely on
+      # the URL check below.
+      - name: Validate server URL
+        env:
+          MAILER_SERVER_URL: ${{ secrets.MAILER_SERVER_URL }}
+        run: |
+          url="${MAILER_SERVER_URL:-}"
+          if [ -z "$url" ]; then
+            echo "::error::MAILER_SERVER_URL secret is not set. capacitor.config.ts falls back to http://localhost:3000, which resolves to the device itself and ships an app that cannot load anything."
+            exit 1
+          fi
+          case "$url" in
+            http://localhost*|https://localhost*|http://127.0.0.1*|https://127.0.0.1*|http://\[::1\]*|http://0.0.0.0*)
+              echo "::error::MAILER_SERVER_URL is a loopback address ($url). This resolves to the device, not a server. Refusing to build an APK that cannot work."
+              exit 1
+              ;;
+          esac
+          case "$url" in
+            http://*)
+              echo "::warning::MAILER_SERVER_URL ($url) is plaintext HTTP. capacitor.config.ts sets cleartext:true and allowMixedContent:true, so this is permitted, but auth and email traffic will not be encrypted."
+              ;;
+          esac
+          echo "Using server URL: $url"
+
       - name: Sync Capacitor
         env:
           MAILER_SERVER_URL: ${{ secrets.MAILER_SERVER_URL }}
