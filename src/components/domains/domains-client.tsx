@@ -140,19 +140,22 @@ export function DomainsClient({ domains }: { domains: Domain[] }) {
               {!domain.verified && (
                 <CardContent>
                   <p className="mb-3 text-sm text-muted-foreground">
-                    Add these DNS records to verify ownership of{" "}
-                    {domain.name}:
+                    Mail is sent through Resend, which signs and authenticates
+                    it for you. These SPF and DMARC values are templates —
+                    replace them with the records Resend gives you for{" "}
+                    {domain.name}. DKIM cannot be configured here; set it up in
+                    your Resend dashboard.
                   </p>
                   <div className="space-y-2">
                     <DnsRecord
                       type="TXT"
-                      name={domain.spfRecord || "SPF"}
+                      name="@"
                       value={domain.spfRecord || ""}
                     />
                     <DnsRecord
                       type="TXT"
-                      name={domain.dkimRecord || "DKIM selector"}
-                      value={domain.dkimRecord || ""}
+                      name="_dmarc"
+                      value={domain.dmarcRecord || ""}
                     />
                     <div className="mt-4">
                       <Button
@@ -188,7 +191,10 @@ function DnsRecord({ type, name, value }: { type: string; name: string; value: s
       <Badge variant="outline" className="w-12 justify-center">
         {type}
       </Badge>
-      <span className="flex-1 truncate text-sm font-mono">{value}</span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-xs text-muted-foreground">{name}</p>
+        <p className="truncate text-sm font-mono">{value}</p>
+      </div>
       <Button
         variant="ghost"
         size="icon"

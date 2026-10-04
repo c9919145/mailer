@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 const createDomainSchema = z.object({
   name: z.string().min(1, "Domain is required"),
 });
-
-const WEBHOOK_EVENTS = [
-  "SENT",
-  "DELIVERED",
-  "OPENED",
-  "CLICKED",
-  "BOUNCED",
-  "COMPLAINED",
-];
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -60,9 +50,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate DNS records
+    // DNS records. These are templates for the user to publish; they are not
+    // derived from anything, because this app does not sign outgoing mail.
+    // Delivery goes through Resend, which handles DKIM itself.
     const dkimSelector = "mailer";
-    const dkimValue = `v=DKIM1; k=rsa; p=${crypto.randomBytes(32).toString("hex")}`;
     const spfValue = "v=spf1 include:_spf.example.com ~all";
     const dmarcValue = "v=DMARC1; p=none; rua=mailto:dmarc@example.com";
 
