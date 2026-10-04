@@ -3,10 +3,11 @@ import { z } from "zod";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
+import { WEBHOOK_EVENTS } from "@/lib/webhook-events";
 
 const createWebhookSchema = z.object({
   url: z.string().url("Invalid URL"),
-  events: z.array(z.string().min(1)),
+  events: z.array(z.enum(WEBHOOK_EVENTS)),
 });
 
 export async function GET() {

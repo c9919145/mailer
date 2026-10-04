@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Webhook } from "@prisma/client";
+import { WEBHOOK_EVENTS } from "@/lib/webhook-events";
 
-const EVENTS = ["SENT", "DELIVERED", "OPENED", "CLICKED", "BOUNCED", "COMPLAINED"];
 
 export function WebhooksClient({ webhooks }: { webhooks: Webhook[] }) {
   const router = useRouter();
@@ -110,7 +110,7 @@ export function WebhooksClient({ webhooks }: { webhooks: Webhook[] }) {
               <div className="space-y-2">
                 <Label>Events</Label>
                 <div className="grid gap-2">
-                  {EVENTS.map((event) => (
+                  {WEBHOOK_EVENTS.map((event) => (
                     <div key={event} className="flex items-center gap-2">
                       <Checkbox
                         id={`event-${event}`}
