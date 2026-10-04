@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
-import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { Button } from "@/components/ui/button";
 import { ListsGrid } from "@/components/lists/lists-grid";
 import { CreateListDialog } from "@/components/lists/create-list-dialog";
 

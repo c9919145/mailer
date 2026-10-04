@@ -1,15 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {
-  Users,
-  ListChecks,
-  Mail,
-  Send,
-  Plus,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-} from "lucide-react";
+import { Users, ListChecks, Mail, Send, Plus, TrendingUp, Activity } from "lucide-react";
 import { getCurrentUserWithDetails } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

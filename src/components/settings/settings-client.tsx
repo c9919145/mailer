@@ -3,16 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import {
-  Key,
-  Plus,
-  Loader2,
-  Copy,
-  CheckCircle2,
-  Trash2,
-  User as UserIcon,
-  Shield,
-} from "lucide-react";
+import { Key, Plus, Loader2, Copy, Trash2, User as UserIcon, Shield } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,13 +18,6 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApiKeyWithMeta } from "@/types";
 

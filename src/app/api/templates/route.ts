@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
-import { TemplateType } from "@prisma/client";
+import { Prisma, TemplateType } from "@prisma/client";
 
 const createTemplateSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -23,12 +23,16 @@ export async function GET(req: NextRequest) {
   const search = searchParams.get("search") ?? "";
   const type = searchParams.get("type");
 
-  const where: any = { userId: user.id };
+  const where: Prisma.TemplateWhereInput = { userId: user.id };
   if (search) {
     where.name = { contains: search };
   }
-  if (type) {
-    where.type = type;
+  // `type` arrives as an arbitrary query string, so it has to be checked against
+// the enum before it reaches Prisma. Previously an unrecognised value reached
+// the where clause and surfaced as a PrismaClientValidationError (HTTP 500);
+// unrecognised values are now ignored, so the filter is simply not applied.
+if (type && (Object.values(TemplateType) as string[]).includes(type)) {
+    where.type = type as TemplateType;
   }
 
   const templates = await prisma.template.findMany({

@@ -28,7 +28,16 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const seriesMap = new Map<string, any>();
+  interface DaySeriesEntry {
+    date: string;
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    bounced: number;
+  }
+
+  const seriesMap = new Map<string, DaySeriesEntry>();
   for (let i = 0; i < days; i++) {
     const d = new Date(since);
     d.setDate(d.getDate() + i);

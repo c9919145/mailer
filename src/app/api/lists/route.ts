@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
+import { Prisma } from "@prisma/client";
 
 const createListSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") ?? "";
 
-  const where: any = { userId: user.id };
+  const where: Prisma.ListWhereInput = { userId: user.id };
   if (search) {
     where.name = { contains: search };
   }

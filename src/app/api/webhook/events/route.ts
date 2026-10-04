@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { EmailStatus } from "@prisma/client";
+import { EmailStatus, Prisma } from "@prisma/client";
 
 function eventToStatus(event: string): EmailStatus | null {
   switch (event) {
@@ -24,13 +24,15 @@ function eventToStatus(event: string): EmailStatus | null {
 
 interface WebhookPayload {
   type?: string;
+  email_id?: string;
   data?: {
     email_id?: string;
     id?: string;
     created_at?: string;
-    [key: string]: any;
+    bounce?: { message?: string };
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export async function POST(req: NextRequest) {
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    const updateData: any = { status };
+    const updateData: Prisma.EmailUpdateInput = { status };
     if (eventType === "email.opened" && !email.openedAt) {
       updateData.openedAt = new Date();
     }
