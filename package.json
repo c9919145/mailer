@@ -9,6 +9,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --max-warnings 0",
+    "check:server-url": "bash scripts/check-server-url.sh .github/workflows/build-android.yml",
     "worker": "tsx src/workers/email.worker.ts",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",

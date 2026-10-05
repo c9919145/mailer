@@ -46,12 +46,61 @@ jobs:
             echo "::error::MAILER_SERVER_URL secret is not set. capacitor.config.ts falls back to http://localhost:3000, which resolves to the device itself and ships an app that cannot load anything."
             exit 1
           fi
-          case "$url" in
-            http://localhost*|https://localhost*|http://127.0.0.1*|https://127.0.0.1*|http://\[::1\]*|http://0.0.0.0*)
-              echo "::error::MAILER_SERVER_URL is a loopback address ($url). This resolves to the device, not a server. Refusing to build an APK that cannot work."
-              exit 1
-              ;;
+          # Parse the host out of the URL rather than glob-matching the whole
+          # string. The earlier `case` on prefixes both under- and over-matched:
+          # it let https://[::1], https://0.0.0.0, https://LOCALHOST and
+          # https://[::ffff:127.0.0.1] through, while wrongly rejecting the
+          # perfectly valid public hostname localhost.example.com.
+          scheme="${url%%://*}"
+          if [ "$scheme" = "$url" ]; then
+            echo "::error::MAILER_SERVER_URL ($url) has no scheme; it must start with http:// or https://."
+            exit 1
+          fi
+          rest="${url#*://}"
+          authority="${rest%%/*}"
+          authority="${rest%%\?*}"
+          authority="${authority%%#*}"
+          # Strip userinfo and the port, and unwrap an IPv6 literal's brackets.
+          host="${authority##*@}"
+          case "$host" in
+            # Bracketed IPv6, optionally with ":port". Drop everything from the
+            # first "]" onward (which covers a trailing port), then strip the
+            # brackets. `%%` is greedy, so it takes the first "]" and stops -
+            # the closing bracket of a literal is never ambiguous.
+            \[*\]\:*|\[*\]) host="${host%%\]*}"; host="${host#\[}"; host="${host%\]}" ;;
+            # Plain host:port. IPv4 addresses contain dots but no colons, so the
+            # first colon is always the port separator here.
+            *:*)     host="${host%%:*}" ;;
           esac
+          # Normalise: lowercase, drop an IPv6 zone id, expand the IPv4-mapped
+          # form ::ffff:127.0.0.1 and the long form ::1.
+          norm_host="$(printf '%s' "$host" | tr '[:upper:]' '[:lower:]')"
+          norm_host="${norm_host%%%*}"
+          case "$norm_host" in
+            ::ffff:127.*|0:0:0:0:0:ffff:127.*|::ffff:7f00:1) norm_host="127.0.0.1" ;;
+            ::1|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:01) norm_host="127.0.0.1" ;;
+          esac
+          if [ -z "$norm_host" ]; then
+            echo "::error::MAILER_SERVER_URL ($url) has no host."
+            exit 1
+          fi
+          # Only treat 127.* as loopback when the whole thing is a dotted quad.
+          # "127.0.0.1.evil.com" is a real public hostname, not an address.
+          is_dotted_quad="no"
+          case "$norm_host" in
+            *[!0-9.]*) ;;
+            *) is_dotted_quad="yes" ;;
+          esac
+          case "$norm_host" in
+            localhost|0.0.0.0|::|::1|0:0:0:0:0:0:0:1)
+              reject="yes" ;;
+            127.*)
+              if [ "$is_dotted_quad" = "yes" ]; then reject="yes"; fi ;;
+          esac
+          if [ "${reject:-}" = "yes" ]; then
+            echo "::error::MAILER_SERVER_URL host '$norm_host' (from $url) is a loopback or unspecified address. This resolves to the device, not a server. Refusing to build an APK that cannot work."
+            exit 1
+          fi
           case "$url" in
             http://*)
               echo "::warning::MAILER_SERVER_URL ($url) is plaintext HTTP. capacitor.config.ts sets cleartext:true and allowMixedContent:true, so this is permitted, but auth and email traffic will not be encrypted."
