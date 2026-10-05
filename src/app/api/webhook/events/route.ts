@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 import { EmailStatus, Prisma } from "@prisma/client";
 
@@ -35,9 +36,56 @@ interface WebhookPayload {
   [key: string]: unknown;
 }
 
+/**
+ * Verifies the Svix signature Resend sends with every webhook.
+ *
+ * This route was previously unauthenticated: anyone who could reach it could POST
+ * `{ type: "email.bounced", data: { email_id: "<id>" } }` and flip any message to
+ * BOUNCED/FAILED, silently corrupting campaign statistics. Signature checking is
+ * what makes the id unguessable-enough.
+ *
+ * `resend.webhooks.verify` is HMAC-based over the timestamp and raw body, and
+ * rejects replays, so it covers both forgery and replay. It needs the raw body
+ * string - a parsed-and-reserialised body would change the bytes and fail the
+ * HMAC.
+ */
+function verifySignature(rawBody: string, req: NextRequest): boolean {
+  const secret = process.env.RESEND_WEBHOOK_SECRET;
+  // Fail closed. An unconfigured secret must never mean "accept everything",
+  // otherwise adding the check later would silently disable it by omission.
+  if (!secret) return false;
+
+  const id = req.headers.get("svix-id");
+  const timestamp = req.headers.get("svix-timestamp");
+  const signature = req.headers.get("svix-signature");
+  if (!id || !timestamp || !signature) return false;
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return false;
+
+  try {
+    new Resend(apiKey).webhooks.verify({ payload: rawBody, headers: { id, timestamp, signature }, webhookSecret: secret });
+    return true;
+  } catch {
+    // verify() throws on any mismatch: bad signature, stale timestamp, replayed id.
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const payload: WebhookPayload = await req.json();
+    const rawBody = await req.text();
+
+    if (!verifySignature(rawBody, req)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let payload: WebhookPayload;
+    try {
+      payload = JSON.parse(rawBody) as WebhookPayload;
+    } catch {
+      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    }
 
     // Resend webhook format: { type: "email.delivered", data: { email_id: "...", ... } }
     const eventType = payload.type;
