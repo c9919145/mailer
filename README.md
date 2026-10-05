@@ -74,6 +74,22 @@ npm run worker
 | `REDIS_URL` | Full Redis/Upstash URL (preferred). |
 | `REDIS_TLS` | Set `true` when using Upstash with TLS. |
 | `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` | Fallback fields for local Redis. |
+| `RESEND_WEBHOOK_SECRET` | Signing secret from Resend → Webhooks. **Required** — without it `/api/webhook/events` returns 401 and delivery tracking stops. |
+| `CRON_SECRET` | Shared secret for `/api/cron/process-queue`. Required; Vercel Cron sends it as `Authorization: Bearer $CRON_SECRET`. |
+| `ALLOW_PUBLIC_SIGNUP` | Set to the literal `true` to let anyone register. Off by default. |
+| `MAILER_SERVER_URL` | Public backend URL baked into the Android build. GitHub Actions secret. |
+
+### Signup
+
+Registration is **closed once the first account exists**, because every account
+shares one `RESEND_API_KEY`: an open endpoint lets a stranger register, mint an
+API key, and send mail through your deployment, burning quota and damaging the
+sender reputation that deliverability depends on.
+
+The first account can always be created, so a fresh deployment can be claimed.
+After that, either create additional accounts directly in the database or set
+`ALLOW_PUBLIC_SIGNUP=true` if the deployment is genuinely multi-tenant. Only the
+exact string `true` enables it — `1` and `yes` do not.
 
 ## Deployment (Vercel)
 
