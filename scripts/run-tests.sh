@@ -8,10 +8,14 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-DB_FILE="$(mktemp -t mailer-test).db"
+# GNU mktemp (Linux, incl. CI) requires a template with at least three X's, while
+# BSD mktemp (macOS) replaces the X's and appends its own suffix. Rather than branch
+# on the platform, give each mktemp a temp directory and build the filename inside it.
+TEST_DIR="$(mktemp -d)"
+DB_FILE="${TEST_DIR}/mailer-test.db"
 export DATABASE_URL="file:${DB_FILE}"
 
-cleanup() { rm -f "$DB_FILE"; }
+cleanup() { rm -rf "$TEST_DIR"; }
 trap cleanup EXIT
 
 echo "==> creating throwaway test database at ${DB_FILE}"
