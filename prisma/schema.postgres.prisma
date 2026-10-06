@@ -43,6 +43,15 @@ enum ApiKeyScopes {
   MANAGE
 }
 
+model Deployment {
+  // Singleton: exactly one row can ever exist, because the primary key is
+  // pinned to 1. Registering the first account inserts this row inside the same
+  // transaction, so a second concurrent signup hits a unique-constraint
+  // violation instead of both claiming the deployment.
+  id        Int      @id @default(1)
+  createdAt DateTime @default(now())
+}
+
 model User {
   id            String    @id @default(uuid())
   name          String?
