@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 
-const REPO = "/var/folders/63/j5_dfzc130j2r3yb5lxs9z4c0000gn/T/opencode/audit/mailer";
 
 let failures = 0;
 
@@ -10,7 +9,7 @@ function check(label: string, ok: boolean, detail = "") {
 }
 
 async function signup(email: string) {
-  const { POST } = await import(`${REPO}/src/app/api/auth/register/route`);
+  const { POST } = await import("../src/app/api/auth/register/route");
   const req = new NextRequest("http://localhost/api/auth/register", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -21,7 +20,7 @@ async function signup(email: string) {
 }
 
 async function main() {
-  const { prisma } = await import(`${REPO}/src/lib/prisma`);
+  const { prisma } = await import("../src/lib/prisma");
   delete process.env.ALLOW_PUBLIC_SIGNUP;
 
   // Scenario: a deployment created BEFORE this gate existed. It has a real user

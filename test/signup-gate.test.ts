@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
 
-const REPO = "/var/folders/63/j5_dfzc130j2r3yb5lxs9z4c0000gn/T/opencode/audit/mailer";
-const ROUTE = `${REPO}/src/app/api/auth/register/route`;
-const PRISMA = `${REPO}/src/lib/prisma`;
+const ROUTE = "../src/app/api/auth/register/route";
+const PRISMA = "../src/lib/prisma";
 
 let failures = 0;
 

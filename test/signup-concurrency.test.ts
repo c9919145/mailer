@@ -1,10 +1,9 @@
 import { NextRequest } from "next/server";
 
-const REPO = "/var/folders/63/j5_dfzc130j2r3yb5lxs9z4c0000gn/T/opencode/audit/mailer";
 
 async function main() {
-  const { POST } = await import(`${REPO}/src/app/api/auth/register/route`);
-  const { prisma } = await import(`${REPO}/src/lib/prisma`);
+  const { POST } = await import("../src/app/api/auth/register/route");
+  const { prisma } = await import("../src/lib/prisma");
 
   // A genuinely fresh deployment: no users AND no singleton claim row.
   await prisma.user.deleteMany({});
